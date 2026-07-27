@@ -51,11 +51,9 @@ class Bot:
         
         keyboard = []
         
-        # Linha 1 - Botão 1
         row1 = [InlineKeyboardButton(btn1, callback_data='menu_products')]
         keyboard.append(row1)
         
-        # Linha 2 - Botões 2 e 3
         row2 = []
         if pos2 in ['left', 'full']:
             row2.append(InlineKeyboardButton(btn2, callback_data='menu_profile'))
@@ -64,11 +62,9 @@ class Bot:
         if row2:
             keyboard.append(row2)
         
-        # Linha 3 - Botão 4
         row3 = [InlineKeyboardButton(btn4, callback_data='menu_affiliate')]
         keyboard.append(row3)
         
-        # Linha 4 - Botões 5 e 6
         row4 = []
         if pos5 in ['left', 'full']:
             row4.append(InlineKeyboardButton(btn5, callback_data='menu_top'))
@@ -77,7 +73,6 @@ class Bot:
         if row4:
             keyboard.append(row4)
         
-        # Linha 5 - Botões 7 e 8
         row5 = []
         if pos7 in ['left', 'full']:
             row5.append(InlineKeyboardButton(btn7, callback_data='menu_support'))
@@ -87,11 +82,16 @@ class Bot:
             keyboard.append(row5)
         
         reply = InlineKeyboardMarkup(keyboard)
-        
         image = self.db.get_setting('welcome_image', '')
+        
+        # ENVIAR TEXTO + IMAGEM JUNTOS NA MESMA MENSAGEM
         if image:
             try:
-                await update.message.reply_photo(photo=image, caption=text, reply_markup=reply)
+                await update.message.reply_photo(
+                    photo=image,
+                    caption=text,
+                    reply_markup=reply
+                )
             except:
                 await update.message.reply_text(text, reply_markup=reply)
         else:
@@ -101,24 +101,20 @@ class Bot:
         user = update.effective_user
         text = update.message.text
         
-        # Se for comando, ignora aqui (os CommandHandlers cuidam)
         if text.startswith('/'):
             return
         
-        # Se for admin e tiver um estado ativo, processa como admin
         if user.id == ADMIN_ID:
             state = self.admin_handlers.admin_states.get(user.id)
             if state:
                 await self.admin_handlers.handle_admin_message(update, context)
                 return
         
-        # Se for cliente e tiver estado ativo, processa como cliente
         state = self.message_handler.states.get(user.id)
         if state:
             await self.message_handler.handle(update, context)
             return
         
-        # Senão, mostra o menu principal
         await self.start_command(update, context)
     
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
