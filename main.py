@@ -37,41 +37,48 @@ class Bot:
         text = welcome if welcome else "Bem-vindo!"
         text += f"\n\n💠 Seus Dados:\n├👤 ID: {user.id}\n└💰 Saldo: R$ {db_user.balance:.2f}"
         
-        keyboard = []
         btn1 = self.db.get_setting('btn1_text', '🛍️ Comprar Produtos')
         btn2 = self.db.get_setting('btn2_text', '👤 Meu Perfil')
         btn3 = self.db.get_setting('btn3_text', '💰 Recarregar')
         btn4 = self.db.get_setting('btn4_text', '💼 Afiliado')
+        btn5 = self.db.get_setting('btn5_text', '🏆 Top')
+        btn6 = self.db.get_setting('btn6_text', '🔍 Pesquisar')
+        btn7 = self.db.get_setting('btn7_text', '👤 Atendimento')
+        btn8 = self.db.get_setting('btn8_text', 'ℹ️ Sobre')
+        
         pos1 = self.db.get_setting('btn1_pos', 'full')
         pos2 = self.db.get_setting('btn2_pos', 'left')
         pos3 = self.db.get_setting('btn3_pos', 'right')
         pos4 = self.db.get_setting('btn4_pos', 'full')
         
+        keyboard = []
+        
         row1 = [InlineKeyboardButton(btn1, callback_data='menu_products')]
+        keyboard.append(row1)
         
         row2 = []
         if pos2 in ['left', 'full']:
             row2.append(InlineKeyboardButton(btn2, callback_data='menu_profile'))
         if pos3 in ['right', 'full']:
             row2.append(InlineKeyboardButton(btn3, callback_data='menu_recharge'))
+        if row2:
+            keyboard.append(row2)
         
         row3 = [InlineKeyboardButton(btn4, callback_data='menu_affiliate')]
+        keyboard.append(row3)
         
-        btn5 = self.db.get_setting('btn5_text', '🏆 Top')
-        btn6 = self.db.get_setting('btn6_text', '🔍 Pesquisar')
         row4 = [
             InlineKeyboardButton(btn5, callback_data='menu_top'),
             InlineKeyboardButton(btn6, callback_data='menu_search')
         ]
+        keyboard.append(row4)
         
-        btn7 = self.db.get_setting('btn7_text', '👤 Atendimento')
-        btn8 = self.db.get_setting('btn8_text', 'ℹ️ Sobre')
         row5 = [
             InlineKeyboardButton(btn7, callback_data='menu_support'),
             InlineKeyboardButton(btn8, callback_data='menu_about')
         ]
+        keyboard.append(row5)
         
-        keyboard = [r for r in [row1, row2, row3, row4, row5] if r]
         reply = InlineKeyboardMarkup(keyboard)
         
         if image:
@@ -122,7 +129,7 @@ class Bot:
         
         logger.info(f"Callback de {user.id}: {data}")
         
-        if data.startswith('buy_') or data.startswith('pix_') or data.startswith('gift_') or data.startswith('edit_') or data.startswith('alert_') or data.startswith('admin_edit_') or data.startswith('admin_toggle_'):
+        if data.startswith('buy_') or data.startswith('pix_') or data.startswith('gift_') or data.startswith('edit_') or data.startswith('alert_') or data.startswith('admin_edit_') or data.startswith('admin_toggle_') or data.startswith('multi_buy_'):
             await self.callback_handler.handle(update, context)
         elif data.startswith('admin_'):
             await self.admin_handlers.handle_admin_callback(update, context)
@@ -189,7 +196,6 @@ class Bot:
         self.scheduler = Scheduler(self.app.bot)
         self.scheduler.start()
         
-        # Iniciar servidor de webhook
         self.webhook = WebhookServer(self.app.bot)
         self.webhook.run(port=5000)
         print("🔗 Webhook do Mercado Pago iniciado!")
