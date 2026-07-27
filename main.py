@@ -28,37 +28,51 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton(db.get_setting('btn8_text', 'ℹ️ Sobre'), callback_data='m8')],
     ]
     
+    reply = InlineKeyboardMarkup(keyboard)
+    
     if img:
         try:
-            await update.message.reply_photo(photo=img, caption=text, reply_markup=InlineKeyboardMarkup(keyboard))
+            await update.message.reply_photo(photo=img, caption=text, reply_markup=reply)
         except:
-            await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+            await update.message.reply_text(text, reply_markup=reply)
     else:
-        await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text(text, reply_markup=reply)
 
 async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     d = q.data
     
-    if d == 'm1': await q.edit_message_text("🛍️ Catálogo em breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm2': await q.edit_message_text("👤 Seu Perfil", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm3': await q.edit_message_text("💰 Recarregar Saldo", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm4': await q.edit_message_text("💼 Afiliado", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm5': await q.edit_message_text("🏆 Top Compradores", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm6': await q.edit_message_text("🔍 Pesquisar", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm7': await q.edit_message_text("👤 Atendimento", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
-    elif d == 'm8': await q.edit_message_text("ℹ️ Sobre", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Voltar", callback_data='back')]]))
+    if d == 'm1':
+        await q.edit_message_text("🛍️ *Catálogo*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm2':
+        await q.edit_message_text("👤 *Meu Perfil*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm3':
+        await q.edit_message_text("💰 *Recarregar Saldo*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm4':
+        await q.edit_message_text("💼 *Afiliado*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm5':
+        await q.edit_message_text("🏆 *Top Compradores*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm6':
+        await q.edit_message_text("🔍 *Pesquisar*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm7':
+        await q.edit_message_text("👤 *Atendimento*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+    elif d == 'm8':
+        await q.edit_message_text("ℹ️ *Sobre*\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     elif d == 'back':
-        user = update.effective_user
+        user = q.from_user
         db_user = db.get_user(user.id) or db.create_user(user.id, user.username, user.first_name)
         w = db.get_setting('welcome_text', 'Bem-vindo!')
-        text = f"{w}\n\n💠 ID: {user.id}\n💰 Saldo: R$ {db_user.balance:.2f}"
+        text = f"{w}\n\n💠 Seus Dados:\n├👤 ID: {user.id}\n└💰 Saldo: R$ {db_user.balance:.2f}"
         keyboard = [
             [InlineKeyboardButton(db.get_setting('btn1_text', '🛍️ Comprar'), callback_data='m1')],
             [InlineKeyboardButton(db.get_setting('btn2_text', '👤 Perfil'), callback_data='m2'),
              InlineKeyboardButton(db.get_setting('btn3_text', '💰 Recarregar'), callback_data='m3')],
             [InlineKeyboardButton(db.get_setting('btn4_text', '💼 Afiliado'), callback_data='m4')],
+            [InlineKeyboardButton(db.get_setting('btn5_text', '🏆 Top'), callback_data='m5'),
+             InlineKeyboardButton(db.get_setting('btn6_text', '🔍 Pesquisar'), callback_data='m6')],
+            [InlineKeyboardButton(db.get_setting('btn7_text', '👤 Atendimento'), callback_data='m7'),
+             InlineKeyboardButton(db.get_setting('btn8_text', 'ℹ️ Sobre'), callback_data='m8')],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
     elif d == 'adm_welcome':
@@ -93,7 +107,7 @@ async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text("🔘 Envie o texto do Botão 8:")
     elif d == 'adm_pos':
         waiting[q.from_user.id] = 'pos'
-        await q.edit_message_text("📐 Envie as posições (8):\nfull|left|right|full|left|right|left|right")
+        await q.edit_message_text("📐 Envie as posições (8):\n\nfull|left|right|full|left|right|left|right")
 
 async def admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
@@ -118,7 +132,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text.startswith('/'):
         return
     
-    # Verificar se admin está editando algo
+    # Admin editando
     if user.id == ADMIN_ID and user.id in waiting:
         state = waiting[user.id]
         
@@ -143,7 +157,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del waiting[user.id]
         return
     
-    # Mensagem normal
+    # Usuário normal - mostra menu
     await start(update, context)
 
 def main():
