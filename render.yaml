@@ -24,3 +24,5 @@ services:
         sync: false
       - key: DATABASE_URL
         value: "sqlite:///database/bot.db"
+      - key: PORT
+        value: "5000"
