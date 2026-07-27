@@ -33,20 +33,15 @@ class AdminHandlers:
         stats = db.get_stats()
         version = db.get_setting('bot_version', '1.0.0')
         maintenance = db.get_setting('maintenance_mode', 'off')
-        vip = db.get_setting('vip_status', 'Não')
         
         text = (
-            f"📊 *DASHBOARD*\n\n"
-            f"⏰ Vencimento: 26/11/2074 (Faltam 18031 dias!)\n"
-            f"👑 Vip: {vip}\n"
-            f"📱 Software version: V4.1.0\n\n"
-            f"📈 *Métricas do business*\n"
+            "📊 *DASHBOARD*\n\n"
+            f"📱 Versão: {version}\n"
             f"👥 Users: {stats['users']}\n"
-            f"💰 Receita total: R$ {stats.get('total_revenue', 0):.2f}\n"
-            f"💰 Receita de hoje: R$ {stats.get('today_revenue', 0):.2f}\n"
-            f"🛒 Vendas total: {stats['sales']}\n"
-            f"🛒 Vendas hoje: {stats.get('today_sales', 0)}\n\n"
-            f"Use os botões abaixo para me configurar"
+            f"💰 Receita: R$ {stats.get('total_revenue', 0):.2f}\n"
+            f"🛒 Vendas: {stats['sales']}\n"
+            f"🔧 Manutenção: {maintenance}\n\n"
+            "Use os botões abaixo:"
         )
         
         keyboard = [
@@ -147,17 +142,23 @@ class AdminHandlers:
             [InlineKeyboardButton("📞 MUDAR SUPORTE", callback_data='admin_edit_support')],
             [InlineKeyboardButton("🔤 MUDAR SEPARADOR", callback_data='admin_edit_separator')],
             [InlineKeyboardButton("📁 MUDAR DESTINO LOG", callback_data='admin_edit_log_channel')],
+            [InlineKeyboardButton("📝 MUDAR TEXTO INICIAL", callback_data='admin_edit_welcome_text')],
+            [InlineKeyboardButton("🖼️ MUDAR IMAGEM INICIAL", callback_data='admin_edit_welcome_image')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 1", callback_data='admin_edit_btn1_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 2", callback_data='admin_edit_btn2_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 3", callback_data='admin_edit_btn3_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 4", callback_data='admin_edit_btn4_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 5", callback_data='admin_edit_btn5_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 6", callback_data='admin_edit_btn6_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 7", callback_data='admin_edit_btn7_text')],
+            [InlineKeyboardButton("🔘 MUDAR BOTÃO 8", callback_data='admin_edit_btn8_text')],
+            [InlineKeyboardButton("📐 MUDAR POSIÇÕES", callback_data='admin_edit_positions')],
             [InlineKeyboardButton("🔙 VOLTAR", callback_data='admin_config')]
         ]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_admin_config(self, query, db):
-        text = (
-            "👑 *PAINEL CONFIGURAR ADMIN*\n\n"
-            "Administradores: 1\n\n"
-            "Use os botões abaixo para fazer as alterações necessárias"
-        )
-        
+        text = "👑 *PAINEL CONFIGURAR ADMIN*\n\nUse os botões abaixo para fazer as alterações necessárias"
         keyboard = [
             [InlineKeyboardButton("➕ ADICIONAR ADM", callback_data='admin_edit_add_admin')],
             [InlineKeyboardButton("➖ REMOVER ADM", callback_data='admin_edit_remove_admin')],
@@ -168,46 +169,23 @@ class AdminHandlers:
     
     async def show_affiliate_config(self, query, db):
         settings = db.get_all_settings()
-        
         text = (
             "💼 *CONFIGURAR AFILIADOS*\n\n"
-            f"🔢 PONTOS MINIMO PRA SALDO: {settings.get('affiliate_min_points', '500')}\n"
-            f"✖️ MULTIPLICADOR: {settings.get('affiliate_multiplier', '0.01')}\n\n"
-            "📊 *SISTEMA DE INDICAÇÃO*\n"
-            "Ao clicar, altera o status do sistema de indicação.\n\n"
-            f"🟢 VERDE = On\n"
-            f"🔴 VERMELHO = Off\n\n"
-            "📥 *PONTOS POR RECARGA*\n"
-            "Quantidade de pontos que o usuário ganha por recarga do afiliado.\n\n"
-            "🎯 *PONTOS MINIMO PARA CONVERTER*\n"
-            "Quantidade mínima de pontos para converter em saldo.\n\n"
-            "💰 *MULTIPLICADOR PARA CONVERTER*\n"
-            "Multiplicador de pontos para saldo na hora de converter.\n"
-            "Ex: 0.01 com 500 pontos = R$ 5,00 de saldo."
+            f"🔢 PONTOS MINIMO: {settings.get('affiliate_min_points', '500')}\n"
+            f"✖️ MULTIPLICADOR: {settings.get('affiliate_multiplier', '0.01')}\n"
+            f"📊 SISTEMA: {settings.get('affiliate_system', 'on')}"
         )
-        
         keyboard = [
-            [InlineKeyboardButton(f"SISTEMA DE INDICAÇÃO ({settings.get('affiliate_system', 'on')})", callback_data='admin_toggle_affiliate')],
+            [InlineKeyboardButton(f"SISTEMA ({settings.get('affiliate_system', 'on')})", callback_data='admin_toggle_affiliate')],
             [InlineKeyboardButton("📥 PONTOS POR RECARGA", callback_data='admin_edit_affiliate_points')],
-            [InlineKeyboardButton("🎯 PONTOS MINIMO PARA CONVERTER", callback_data='admin_edit_affiliate_min_points')],
+            [InlineKeyboardButton("🎯 PONTOS MINIMO", callback_data='admin_edit_affiliate_min_points')],
             [InlineKeyboardButton("🔙 Voltar", callback_data='admin_config')]
         ]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_users_config(self, query, db):
         settings = db.get_all_settings()
-        text = (
-            "👥 *CONFIGURAR USUÁRIOS*\n\n"
-            "📤 *TRANSMITIR A TODOS*\n"
-            "Após clicar, envie o texto que quer transmitir.\n\n"
-            "🔍 *PESQUISAR USUÁRIO*\n"
-            "Se este usuário estiver registrado no bot, vai abrir as configurações de edição.\n"
-            "Você poderá editar o saldo, ver o histórico de compras, e todas as informações dele.\n\n"
-            "🎁 *BÔNUS DE REGISTRO*\n"
-            f"Bônus atual: R$ {settings.get('registration_bonus', '0.00')}\n"
-            "Bônus de registro é o valor que cada usuário novo ganhará apenas por se registrar."
-        )
-        
+        text = f"👥 *CONFIGURAR USUÁRIOS*\n\n🎁 Bônus de registro: R$ {settings.get('registration_bonus', '0.00')}"
         keyboard = [
             [InlineKeyboardButton("📤 TRANSMITIR A TODOS", callback_data='admin_actions_broadcast')],
             [InlineKeyboardButton("🔍 PESQUISAR USUÁRIO", callback_data='admin_edit_search_user')],
@@ -220,63 +198,38 @@ class AdminHandlers:
         settings = db.get_all_settings()
         text = (
             "💳 *CONFIGURAR PIX*\n\n"
-            f"🔑 TOKEN MERCADO PAGO: {'Configurado' if settings.get('mp_access_token') else 'Não configurado'}\n"
-            f"📥 DEPÓSITO MÍNIMO: R$ {settings.get('deposit_min', '1.00')}\n"
-            f"📤 DEPÓSITO MÁXIMO: R$ {settings.get('deposit_max', '150.00')}\n"
-            f"⏰ TEMPO DE EXPIRAÇÃO: {settings.get('pix_expiration', '15')} Minutos\n"
-            f"🎁 BÔNUS DE DEPÓSITO: {settings.get('bonus_percentage', '0')}%\n"
-            f"📊 DEPÓSITO MÍNIMO PARA BÔNUS: R$ {settings.get('bonus_min_value', '0.00')}"
+            f"🔑 TOKEN: {'Configurado' if settings.get('mp_access_token') else 'Nao'}\n"
+            f"📥 MÍN: R$ {settings.get('deposit_min', '1.00')}\n"
+            f"📤 MÁX: R$ {settings.get('deposit_max', '150.00')}\n"
+            f"⏰ EXPIRA: {settings.get('pix_expiration', '15')} min\n"
+            f"🎁 BÔNUS: {settings.get('bonus_percentage', '0')}%"
         )
-        
         keyboard = [
-            [InlineKeyboardButton("💠 PIX MANUAL", callback_data='admin_edit_pix_manual')],
-            [InlineKeyboardButton("🤖 PIX AUTOMATICO", callback_data='admin_edit_pix_auto')],
             [InlineKeyboardButton("🔑 MUDAR TOKEN", callback_data='admin_edit_mp_token')],
             [InlineKeyboardButton("📥 MUDAR DEPOSITO MIN", callback_data='admin_edit_deposit_min')],
             [InlineKeyboardButton("📤 MUDAR DEPOSITO MAX", callback_data='admin_edit_deposit_max')],
-            [InlineKeyboardButton("⏰ MUDAR TEMPO DE EXPIRAÇÃO", callback_data='admin_edit_expiration')],
+            [InlineKeyboardButton("⏰ MUDAR EXPIRAÇÃO", callback_data='admin_edit_expiration')],
             [InlineKeyboardButton("🎁 MUDAR BONUS", callback_data='admin_edit_bonus')],
-            [InlineKeyboardButton("📊 MUDAR MIN PARA BONUS", callback_data='admin_edit_bonus_min')],
             [InlineKeyboardButton("🔙 VOLTAR", callback_data='admin_config')]
         ]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_logins_config(self, query, db):
-        stock_count = self.login_service.get_stock_count()
-        text = (
-            "📦 *CONFIGURAR LOGINS*\n\n"
-            f"📊 LOGINS NO ESTOQUE: {stock_count}\n\n"
-            "➕ *ADICIONAR LOGIN*\n"
-            "Formato: NOME|EMAIL|SENHA|DESCRICAO|DURACAO|PRECO\n"
-            "Use === como separador\n\n"
-            "➖ *REMOVER LOGIN*\n"
-            "Envie o serviço e o email separados por ===\n"
-            "Ex: NETFLIX===EMAIL\n\n"
-            "🗑️ *REMOVER POR PLATAFORMA*\n"
-            "Envie o nome da plataforma\n\n"
-            "💣 *ZERAR ESTOQUE*\n"
-            "Remove todos os logins"
-        )
-        
+        stock = self.login_service.get_stock_count()
+        text = f"📦 *CONFIGURAR LOGINS*\n\n📊 Estoque: {stock} logins"
         keyboard = [
             [InlineKeyboardButton("➕ ADICIONAR LOGIN", callback_data='admin_actions_add_login')],
             [InlineKeyboardButton("➖ REMOVER LOGIN", callback_data='admin_actions_remove_login')],
             [InlineKeyboardButton("🗑️ REMOVER POR PLATAFORMA", callback_data='admin_edit_remove_platform')],
-            [InlineKeyboardButton("📊 ESTOQUE DETALHADO", callback_data='admin_edit_stock_detail')],
             [InlineKeyboardButton("💣 ZERAR ESTOQUE", callback_data='admin_actions_clear_stock')],
-            [InlineKeyboardButton("💰 MUDAR VALOR DO SERVIÇO", callback_data='admin_edit_service_price')],
-            [InlineKeyboardButton("💵 MUDAR VALOR DE TODOS", callback_data='admin_edit_all_prices')],
+            [InlineKeyboardButton("💰 MUDAR PREÇO SERVIÇO", callback_data='admin_edit_service_price')],
+            [InlineKeyboardButton("💵 MUDAR PREÇO TODOS", callback_data='admin_edit_all_prices')],
             [InlineKeyboardButton("🔙 VOLTAR", callback_data='admin_config')]
         ]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_search_config(self, query, db):
-        text = (
-            "🔍 *PAINEL DE CONFIGURAÇÃO DA PESQUISA DE SERVIÇOS*\n\n"
-            "📸 IMAGENS SALVAS: 0\n"
-            "🔍 SISTEMA PESQUISA: ON"
-        )
-        
+        text = "🔍 *CONFIGURAR PESQUISA*"
         keyboard = [
             [InlineKeyboardButton("📸 ADICIONAR IMAGEM", callback_data='admin_edit_add_image')],
             [InlineKeyboardButton("🗑️ REMOVER IMAGEM", callback_data='admin_edit_remove_image')],
@@ -295,73 +248,40 @@ class AdminHandlers:
         await query.edit_message_text("🔧 *AÇÕES*\n\nSelecione uma ação:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_transactions_menu(self, query):
-        keyboard = [
-            [InlineKeyboardButton("📊 Relatório de Vendas", callback_data='admin_edit_sales_report')],
-            [InlineKeyboardButton("💳 Relatório de Recargas", callback_data='admin_edit_recharge_report')],
-            [InlineKeyboardButton("🔙 Voltar", callback_data='admin_back')]
-        ]
-        await query.edit_message_text("📊 *TRANSAÇÕES*\n\nSelecione o relatório:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        keyboard = [[InlineKeyboardButton("🔙 Voltar", callback_data='admin_back')]]
+        await query.edit_message_text("📊 *TRANSAÇÕES*\n\nEm breve...", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def show_updates(self, query):
-        text = (
-            "🔄 *ATUALIZAÇÕES*\n\n"
-            "📱 Versão: V4.1.0\n"
-            "📅 Última atualização: 26/11/2024\n\n"
-            "✅ Todas as funcionalidades operacionais."
-        )
+        text = "🔄 *ATUALIZAÇÕES*\n\n📱 Versão: V4.1.0\n✅ Sistema operacional."
         keyboard = [[InlineKeyboardButton("🔙 Voltar", callback_data='admin_back')]]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def ask_product_data(self, query, user_id):
         self.admin_states[user_id] = 'awaiting_product_data'
-        await query.edit_message_text(
-            "📦 *Adicionar Produto*\n\nEnvie os dados no formato:\n\n`NOME|PRECO|ESTOQUE|CATEGORIA|DESCRICAO`\n\nExemplo:\n`Netflix|15.00|50|Streaming|Acesso 30 dias`",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("📦 *Adicionar Produto*\n\nFormato:\n`NOME|PRECO|ESTOQUE|CATEGORIA|DESCRICAO`\n\nExemplo:\n`Netflix|15.00|50|Streaming|Acesso 30 dias`", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]), parse_mode='Markdown')
     
     async def ask_broadcast(self, query, user_id):
         self.admin_states[user_id] = 'awaiting_broadcast'
-        await query.edit_message_text(
-            "📤 *Transmitir Mensagem*\n\nEnvie a mensagem que deseja enviar para todos os usuários:\n\n_Digite 'cancelar' para sair_",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("📤 *Transmitir*\n\nEnvie a mensagem para todos:", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]), parse_mode='Markdown')
     
     async def ask_gift_value(self, query, user_id):
         self.admin_states[user_id] = 'awaiting_gift_value'
-        await query.edit_message_text(
-            "🎁 *Criar Gift Card*\n\nEnvie o valor do Gift Card:\n\nExemplo: 50",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("🎁 *Criar Gift Card*\n\nEnvie o valor:", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]), parse_mode='Markdown')
     
     async def ask_login_data(self, query, user_id):
         self.admin_states[user_id] = 'awaiting_login_data'
-        await query.edit_message_text(
-            "📦 *Adicionar Login*\n\nEnvie os dados no formato:\n\n`SERVICO|EMAIL|SENHA|DESCRICAO|DURACAO|PRECO`\n\nUse | como separador",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("📦 *Adicionar Login*\n\nFormato:\n`SERVICO|EMAIL|SENHA|DESCRICAO|DURACAO|PRECO`", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]), parse_mode='Markdown')
     
     async def ask_remove_login(self, query, user_id):
         self.admin_states[user_id] = 'awaiting_remove_login'
-        await query.edit_message_text(
-            "➖ *Remover Login*\n\nEnvie o serviço e email separados por |\n\nExemplo: `NETFLIX|email@email.com`",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("➖ *Remover Login*\n\nFormato: `SERVICO|EMAIL`", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Cancelar", callback_data='admin_actions')]]), parse_mode='Markdown')
     
     async def confirm_clear_stock(self, query):
         keyboard = [
             [InlineKeyboardButton("⚠️ SIM, ZERAR TUDO", callback_data='admin_actions_clear_stock_confirm')],
             [InlineKeyboardButton("❌ Cancelar", callback_data='admin_config_logins')]
         ]
-        await query.edit_message_text(
-            "⚠️ *TEM CERTEZA?*\n\nIsso irá remover TODOS os logins do estoque!\n\nEsta ação não pode ser desfeita.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text("⚠️ *TEM CERTEZA?*\n\nIsso removerá TODOS os logins!", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
     async def handle_edit_field(self, query, data, user_id):
         field = data.replace('admin_edit_', '')
@@ -385,18 +305,23 @@ class AdminHandlers:
             'welcome_image': "Envie a URL da nova imagem:",
             'about_text': "Envie o novo texto Sobre:",
             'terms_text': "Envie os novos termos de uso:",
-            'btn1_text': "Envie o texto do botão 1:",
-            'btn2_text': "Envie o texto do botão 2:",
-            'btn3_text': "Envie o texto do botão 3:",
-            'btn4_text': "Envie o texto do botão 4:",
-            'service_price': "Envie o nome do serviço e novo valor separados por |:\nEx: NETFLIX|12.00",
-            'all_prices': "Envie o novo valor para TODOS os serviços:",
-            'remove_platform': "Envie o nome da plataforma para remover:",
-            'add_admin': "Envie o ID do Telegram do novo admin:",
-            'remove_admin': "Envie o ID do Telegram do admin a remover:",
-            'search_user': "Envie o ID do Telegram do usuário:",
+            'btn1_text': "Envie o texto do Botão 1:",
+            'btn2_text': "Envie o texto do Botão 2:",
+            'btn3_text': "Envie o texto do Botão 3:",
+            'btn4_text': "Envie o texto do Botão 4:",
+            'btn5_text': "Envie o texto do Botão 5:",
+            'btn6_text': "Envie o texto do Botão 6:",
+            'btn7_text': "Envie o texto do Botão 7:",
+            'btn8_text': "Envie o texto do Botão 8:",
+            'positions': "Envie as posições dos botões no formato:\n`pos1|pos2|pos3|pos4`\n\nPosições: full, left, right\nExemplo: `full|left|right|full`",
+            'service_price': "Envie: SERVICO|PRECO",
+            'all_prices': "Envie o novo valor para TODOS:",
+            'remove_platform': "Envie o nome da plataforma:",
+            'add_admin': "Envie o ID do Telegram:",
+            'remove_admin': "Envie o ID do admin a remover:",
+            'search_user': "Envie o ID do usuário:",
             'add_image': "Envie a URL da imagem:",
-            'remove_image': "Envie o nome da imagem a remover:",
+            'remove_image': "Envie o nome da imagem:",
         }
         
         msg = prompts.get(field, f"Envie o novo valor para {field}:")
@@ -411,12 +336,7 @@ class AdminHandlers:
     
     async def admin_panel_back(self, query, db):
         stats = db.get_stats()
-        text = (
-            "📊 *DASHBOARD*\n\n"
-            f"👥 Users: {stats['users']}\n"
-            f"💰 Receita: R$ {stats.get('total_revenue', 0):.2f}\n"
-            f"🛒 Vendas: {stats['sales']}"
-        )
+        text = f"📊 *DASHBOARD*\n\n👥 Users: {stats['users']}\n💰 Receita: R$ {stats.get('total_revenue', 0):.2f}\n🛒 Vendas: {stats['sales']}"
         keyboard = [
             [InlineKeyboardButton("⚙️ CONFIGURAÇÕES", callback_data='admin_config')],
             [InlineKeyboardButton("🔧 AÇÕES", callback_data='admin_actions')],
@@ -446,7 +366,7 @@ class AdminHandlers:
                     db.add_product(name, price, stock, category, description)
                     await update.message.reply_text(f"✅ Produto '{name}' adicionado!")
                 else:
-                    await update.message.reply_text("❌ Formato invalido. Use: NOME|PRECO|ESTOQUE|CATEGORIA|DESCRICAO")
+                    await update.message.reply_text("❌ Formato invalido.")
                 self.admin_states.pop(user.id, None)
             
             elif state == 'awaiting_broadcast':
@@ -462,9 +382,9 @@ class AdminHandlers:
                         except:
                             pass
                     session.close()
-                    await update.message.reply_text(f"✅ Transmissão concluída! Enviado para {count} usuários.")
+                    await update.message.reply_text(f"✅ Transmissão concluída! {count} usuários.")
                 else:
-                    await update.message.reply_text("❌ Transmissão cancelada.")
+                    await update.message.reply_text("❌ Cancelada.")
                 self.admin_states.pop(user.id, None)
             
             elif state == 'awaiting_gift_value':
@@ -488,111 +408,65 @@ class AdminHandlers:
                     self.login_service.add_login(service, email, password, description, duration, price)
                     await update.message.reply_text(f"✅ Login adicionado para {service}!")
                 else:
-                    await update.message.reply_text("❌ Formato invalido. Use: SERVICO|EMAIL|SENHA|DESCRICAO|DURACAO|PRECO")
+                    await update.message.reply_text("❌ Formato invalido.")
                 self.admin_states.pop(user.id, None)
             
             elif state == 'awaiting_remove_login':
                 parts = text.split('|')
                 if len(parts) >= 2:
                     service = parts[0].strip()
-                    email = parts[1].strip()
                     count = self.login_service.remove_by_platform(service)
                     await update.message.reply_text(f"✅ {count} logins removidos de {service}!")
                 else:
-                    await update.message.reply_text("❌ Formato invalido. Use: SERVICO|EMAIL")
+                    await update.message.reply_text("❌ Formato invalido.")
                 self.admin_states.pop(user.id, None)
             
             elif state and state.startswith('admin_editing_'):
                 field = state.replace('admin_editing_', '')
                 
                 field_map = {
-                    'support': 'support_link',
-                    'separator': 'separator',
-                    'log_channel': 'log_channel',
-                    'mp_token': 'mp_access_token',
-                    'deposit_min': 'deposit_min',
-                    'deposit_max': 'deposit_max',
-                    'expiration': 'pix_expiration',
-                    'bonus': 'bonus_percentage',
-                    'bonus_min': 'bonus_min_value',
-                    'commission': 'commission_percentage',
+                    'support': 'support_link', 'separator': 'separator',
+                    'log_channel': 'log_channel', 'mp_token': 'mp_access_token',
+                    'deposit_min': 'deposit_min', 'deposit_max': 'deposit_max',
+                    'expiration': 'pix_expiration', 'bonus': 'bonus_percentage',
+                    'bonus_min': 'bonus_min_value', 'commission': 'commission_percentage',
                     'registration_bonus': 'registration_bonus',
                     'affiliate_points': 'affiliate_points_per_recharge',
                     'affiliate_min_points': 'affiliate_min_points',
-                    'welcome_text': 'welcome_text',
-                    'welcome_image': 'welcome_image',
-                    'about_text': 'about_text',
-                    'terms_text': 'terms_text',
-                    'btn1_text': 'btn1_text',
-                    'btn2_text': 'btn2_text',
-                    'btn3_text': 'btn3_text',
-                    'btn4_text': 'btn4_text',
+                    'welcome_text': 'welcome_text', 'welcome_image': 'welcome_image',
+                    'about_text': 'about_text', 'terms_text': 'terms_text',
+                    'btn1_text': 'btn1_text', 'btn2_text': 'btn2_text',
+                    'btn3_text': 'btn3_text', 'btn4_text': 'btn4_text',
+                    'btn5_text': 'btn5_text', 'btn6_text': 'btn6_text',
+                    'btn7_text': 'btn7_text', 'btn8_text': 'btn8_text',
                 }
                 
-                if field == 'service_price':
+                if field == 'positions':
+                    parts = text.replace('\n', '|').split('|')
+                    for i, pos in enumerate(parts[:4], 1):
+                        db.set_setting(f'btn{i}_pos', pos.strip())
+                    await update.message.reply_text("✅ Posições atualizadas!")
+                
+                elif field == 'service_price':
                     parts = text.split('|')
                     if len(parts) >= 2:
-                        service = parts[0].strip()
-                        price = float(parts[1].strip())
-                        count = self.login_service.update_price_by_service(service, price)
-                        await update.message.reply_text(f"✅ {count} logins de {service} atualizados para R$ {price:.2f}!")
-                    else:
-                        await update.message.reply_text("❌ Formato: SERVICO|PRECO")
+                        count = self.login_service.update_price_by_service(parts[0].strip(), float(parts[1].strip()))
+                        await update.message.reply_text(f"✅ {count} logins atualizados!")
                 
                 elif field == 'all_prices':
                     try:
-                        price = float(text)
-                        count = self.login_service.update_all_prices(price)
-                        await update.message.reply_text(f"✅ {count} logins atualizados para R$ {price:.2f}!")
+                        count = self.login_service.update_all_prices(float(text))
+                        await update.message.reply_text(f"✅ {count} logins atualizados!")
                     except:
                         await update.message.reply_text("❌ Valor invalido.")
                 
                 elif field == 'remove_platform':
                     count = self.login_service.remove_by_platform(text.strip())
-                    await update.message.reply_text(f"✅ {count} logins removidos de {text.strip()}!")
-                
-                elif field == 'add_admin':
-                    try:
-                        admin_id = int(text)
-                        from database.models import SessionLocal, User
-                        session = SessionLocal()
-                        user = session.query(User).filter_by(telegram_id=admin_id).first()
-                        if user:
-                            user.is_admin = True
-                            session.commit()
-                            await update.message.reply_text(f"✅ Admin adicionado: {admin_id}")
-                        else:
-                            await update.message.reply_text("❌ Usuário não encontrado.")
-                        session.close()
-                    except:
-                        await update.message.reply_text("❌ ID invalido.")
-                
-                elif field == 'search_user':
-                    try:
-                        user_id = int(text)
-                        from database.models import SessionLocal, User
-                        session = SessionLocal()
-                        u = session.query(User).filter_by(telegram_id=user_id).first()
-                        if u:
-                            info = (
-                                f"👤 *Usuário Encontrado*\n\n"
-                                f"🆔 ID: {u.telegram_id}\n"
-                                f"👤 Nome: {u.first_name}\n"
-                                f"💰 Saldo: R$ {u.balance:.2f}\n"
-                                f"💼 Comissão: R$ {u.commission_balance:.2f}\n"
-                                f"🛒 Compras: {u.total_purchases}\n"
-                                f"💳 Recarregado: R$ {u.total_recharged:.2f}"
-                            )
-                            await update.message.reply_text(info, parse_mode='Markdown')
-                        else:
-                            await update.message.reply_text("❌ Usuário não encontrado.")
-                        session.close()
-                    except:
-                        await update.message.reply_text("❌ ID invalido.")
+                    await update.message.reply_text(f"✅ {count} logins removidos!")
                 
                 elif field_map.get(field):
                     db.set_setting(field_map[field], text)
-                    await update.message.reply_text(f"✅ {field} atualizado com sucesso!")
+                    await update.message.reply_text(f"✅ {field} atualizado!")
                 
                 else:
                     await update.message.reply_text(f"✅ Comando processado!")
