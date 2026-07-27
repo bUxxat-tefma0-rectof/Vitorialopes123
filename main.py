@@ -28,26 +28,20 @@ def build_keyboard():
     b8 = db.get_setting('btn8_text', 'ℹ️ Sobre')
     
     kb = []
-    
-    # Linha 1 - Botão 1
     kb.append([InlineKeyboardButton(b1, callback_data='m1')])
     
-    # Linha 2 - Botões 2 e 3
     r2 = []
     if p2 in ['left', 'full']: r2.append(InlineKeyboardButton(b2, callback_data='m2'))
     if p3 in ['right', 'full']: r2.append(InlineKeyboardButton(b3, callback_data='m3'))
     if r2: kb.append(r2)
     
-    # Linha 3 - Botão 4
     kb.append([InlineKeyboardButton(b4, callback_data='m4')])
     
-    # Linha 4 - Botões 5 e 6
     r4 = []
     if p5 in ['left', 'full']: r4.append(InlineKeyboardButton(b5, callback_data='m5'))
     if p6 in ['right', 'full']: r4.append(InlineKeyboardButton(b6, callback_data='m6'))
     if r4: kb.append(r4)
     
-    # Linha 5 - Botões 7 e 8
     r5 = []
     if p7 in ['left', 'full']: r5.append(InlineKeyboardButton(b7, callback_data='m7'))
     if p8 in ['right', 'full']: r5.append(InlineKeyboardButton(b8, callback_data='m8'))
@@ -92,7 +86,23 @@ async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(f"👤 *Meu Perfil*\n\n🆔 ID: {user.id}\n💰 Saldo: R$ {bal:.2f}\n📱 WhatsApp: {tel}\n🛒 Compras: {db_user.total_purchases if db_user else 0}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     
     elif d == 'm3':
-        await q.edit_message_text("💰 *Recarregar Saldo*\n\n💠 Pix Rápido disponível!\n\nEm breve você poderá gerar PIX aqui.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+        db_user = db.get_user(user.id)
+        bal = db_user.balance if db_user else 0
+        min_val = db.get_setting('deposit_min', '5')
+        max_val = db.get_setting('deposit_max', '150')
+        bonus = db.get_setting('bonus_percentage', '0')
+        
+        text = f"💰 *Recarregar Saldo*\n\n"
+        text += f"🆔 ID: {user.id}\n"
+        text += f"💵 Saldo: R$ {bal:.2f}\n\n"
+        text += f"📥 Mín: R$ {min_val}\n"
+        text += f"📤 Máx: R$ {max_val}\n"
+        if bonus != '0':
+            text += f"🎁 Bônus: {bonus}%\n"
+        text += f"\n💠 Digite o valor para gerar o PIX:"
+        
+        waiting[user.id] = 'recharge_value'
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     
     elif d == 'm4':
         await q.edit_message_text(f"💼 *Afiliado*\n\n🔗 Seu link:\nt.me/SEUBOT?start={user.id}\n\n💰 Comissão: 10%\n👥 Indicados: 0\n\nCompartilhe e ganhe!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
@@ -101,11 +111,11 @@ async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text("🏆 *Top Compradores*\n\n🥇 Em breve!\n🥈 Em breve!\n🥉 Em breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     
     elif d == 'm6':
-        await q.edit_message_text("🔍 *Pesquisar Serviços*\n\nDigite o nome do produto para pesquisar.\n\nEm breve!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+        await q.edit_message_text("🔍 *Pesquisar Serviços*\n\nDigite o nome do produto para pesquisar.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     
     elif d == 'm7':
         sup = db.get_setting('support_link', '@suporte')
-        await q.edit_message_text(f"👤 *Atendimento*\n\n📱 {sup}\n\nEntre em contato pelo Telegram!\nResposta em até 24h.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
+        await q.edit_message_text(f"👤 *Atendimento*\n\n📱 {sup}\n\nEntre em contato pelo Telegram!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='back')]]), parse_mode='Markdown')
     
     elif d == 'm8':
         about = db.get_setting('about_text', 'Larizinha Store - Sua loja de streamings.')
@@ -282,6 +292,37 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 try: await context.bot.send_message(u.telegram_id, text); c += 1
                 except: pass
             s.close(); await update.message.reply_text(f"✅ {c} usuários")
+        elif state == 'recharge_value':
+            try:
+                amount = float(text)
+                min_val = float(db.get_setting('deposit_min', '5'))
+                max_val = float(db.get_setting('deposit_max', '150'))
+                
+                if amount < min_val or amount > max_val:
+                    await update.message.reply_text(f"❌ Valor entre R$ {min_val} e R$ {max_val}")
+                else:
+                    from services.pix_service import PixService
+                    ps = PixService()
+                    db_user = db.get_user(user.id)
+                    result = ps.gerar_pix(db_user.id if db_user else user.id, amount, "Recarga")
+                    
+                    if result['sucesso']:
+                        bonus_pct = float(db.get_setting('bonus_percentage', '0'))
+                        bonus = amount * (bonus_pct/100) if bonus_pct > 0 else 0
+                        
+                        caption = f"💳 *PIX Gerado*\n\n💰 Valor: R$ {amount:.2f}\n⏰ Expira: {result['expiracao_minutos']} min\n🆔 {result['pix_id']}\n\n📋 Copia e Cola:\n`{result['copia_cola']}`"
+                        if bonus > 0:
+                            caption += f"\n\n🎁 Bônus: R$ {bonus:.2f}"
+                        
+                        if result.get('qr_code_imagem'):
+                            await update.message.reply_photo(photo=result['qr_code_imagem'], caption=caption, parse_mode='Markdown')
+                        else:
+                            await update.message.reply_text(caption, parse_mode='Markdown')
+                    else:
+                        await update.message.reply_text(f"❌ Erro: {result.get('erro')}")
+                    ps.close()
+            except:
+                await update.message.reply_text("❌ Valor inválido!")
         elif state in field_map:
             db.set_setting(field_map[state], text)
             await update.message.reply_text("✅ Salvo!")
