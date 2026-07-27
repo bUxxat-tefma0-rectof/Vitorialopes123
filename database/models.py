@@ -3,9 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import os
-from config.settings import DATABASE_URL
 
-engine = create_engine(DATABASE_URL)
+# Forçar SQLite
+db_url = os.environ.get('DATABASE_URL', 'sqlite:///database/bot.db')
+if not db_url.startswith('sqlite'):
+    db_url = 'sqlite:///database/bot.db'
+
+engine = create_engine(db_url)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
