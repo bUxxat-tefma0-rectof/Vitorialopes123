@@ -1,0 +1,26 @@
+services:
+  - type: worker
+    name: doguinha-store-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_ID
+        value: "SEU_ID"
+      - key: MERCADO_PAGO_ACCESS_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        value: "sqlite:///database/bot.db"
+  
+  - type: web
+    name: doguinha-store-webhook
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python webhook_server.py
+    envVars:
+      - key: MERCADO_PAGO_ACCESS_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        value: "sqlite:///database/bot.db"
