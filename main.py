@@ -8,6 +8,7 @@ from handlers.client import ClientHandlers
 from handlers.admin import AdminHandlers
 from handlers.callback_handler import CallbackHandler
 from handlers.message_handler import MessageHandler
+from handlers.webhook_handler import WebhookServer
 from scheduler.jobs import Scheduler
 from utils.logger import logger
 
@@ -20,6 +21,7 @@ class Bot:
         self.message_handler = MessageHandler()
         self.app = None
         self.scheduler = None
+        self.webhook = None
     
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user
@@ -46,24 +48,28 @@ class Bot:
         pos4 = self.db.get_setting('btn4_pos', 'full')
         
         row1 = [InlineKeyboardButton(btn1, callback_data='menu_products')]
+        
         row2 = []
         if pos2 in ['left', 'full']:
             row2.append(InlineKeyboardButton(btn2, callback_data='menu_profile'))
         if pos3 in ['right', 'full']:
             row2.append(InlineKeyboardButton(btn3, callback_data='menu_recharge'))
+        
         row3 = [InlineKeyboardButton(btn4, callback_data='menu_affiliate')]
         
-        extra_btns = [
-            InlineKeyboardButton(self.db.get_setting('btn5_text', '🏆 Top'), callback_data='menu_top'),
-            InlineKeyboardButton(self.db.get_setting('btn6_text', '🔍 Pesquisar'), callback_data='menu_search')
+        btn5 = self.db.get_setting('btn5_text', '🏆 Top')
+        btn6 = self.db.get_setting('btn6_text', '🔍 Pesquisar')
+        row4 = [
+            InlineKeyboardButton(btn5, callback_data='menu_top'),
+            InlineKeyboardButton(btn6, callback_data='menu_search')
         ]
-        row4 = extra_btns
         
-        support_btns = [
-            InlineKeyboardButton(self.db.get_setting('btn7_text', '👤 Atendimento'), callback_data='menu_support'),
-            InlineKeyboardButton(self.db.get_setting('btn8_text', 'ℹ️ Sobre'), callback_data='menu_about')
+        btn7 = self.db.get_setting('btn7_text', '👤 Atendimento')
+        btn8 = self.db.get_setting('btn8_text', 'ℹ️ Sobre')
+        row5 = [
+            InlineKeyboardButton(btn7, callback_data='menu_support'),
+            InlineKeyboardButton(btn8, callback_data='menu_about')
         ]
-        row5 = support_btns
         
         keyboard = [r for r in [row1, row2, row3, row4, row5] if r]
         reply = InlineKeyboardMarkup(keyboard)
@@ -81,7 +87,8 @@ class Bot:
         text = update.message.text
         
         maintenance = self.db.get_setting('maintenance_mode', 'off')
-        is_admin = user.id == int(__import__('config.settings').ADMIN_ID)
+        from config.settings import ADMIN_ID
+        is_admin = user.id == ADMIN_ID
         
         if maintenance == 'on' and not is_admin:
             await update.message.reply_text("🔧 Bot em manutencao! Volte mais tarde.")
@@ -181,6 +188,11 @@ class Bot:
         
         self.scheduler = Scheduler(self.app.bot)
         self.scheduler.start()
+        
+        # Iniciar servidor de webhook
+        self.webhook = WebhookServer(self.app.bot)
+        self.webhook.run(port=5000)
+        print("🔗 Webhook do Mercado Pago iniciado!")
         
         print("✅ Bot iniciado!")
         logger.info("Bot iniciado com sucesso")
